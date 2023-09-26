@@ -1,26 +1,39 @@
+// drafts.service.ts
 import { Injectable } from '@nestjs/common';
-import { CreatePostInput } from './dto/create-post.input';
-import { UpdatePostInput } from './dto/update-post.input';
+import { InjectModel } from '@nestjs/sequelize';
+import { Draft } from './entities/post.entity';
+import { DraftPosts } from '@/article/entities/draftPosts';
+import { UpdateDraftFieldDto } from './dto/update-draft.input';
 
 @Injectable()
-export class PostsService {
-  create(createPostInput: CreatePostInput) {
-    return 'This action adds a new post';
+export class DraftsService {
+  // constructor(
+  //   @InjectModel(DraftPosts)
+  //   private readonly draftModel: typeof DraftPosts,
+  // ) {}
+
+  async findAllDrafts(): Promise<DraftPosts[]> {
+    return DraftPosts.findAll();
   }
 
-  findAll() {
-    return `This action returns all posts`;
-  }
+  async updateDraftField(input: UpdateDraftFieldDto): Promise<DraftPosts> {
+    const { id, fieldName, newValue } = input;
+    try {
+      // Encontre o usuário pelo ID
+      const draft = await DraftPosts.findByPk(id);
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
-  }
-
-  update(id: number, updatePostInput: UpdatePostInput) {
-    return `This action updates a #${id} post`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+      if (draft) {
+        // Atualize o campo dinamicamente
+        draft[fieldName] = newValue;
+        await draft.save();
+        return draft;
+      } else {
+        throw new Error('Draft não encontrado.');
+      }
+    } catch (error) {
+      throw new Error(
+        `Erro ao atualizar o campo ${fieldName}: ${error.message}`,
+      );
+    }
   }
 }

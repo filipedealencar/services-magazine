@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { PostsService } from './posts.service';
-import { PostsResolver } from './posts.resolver';
+import { DraftsService } from './posts.service';
+import { DraftsResolver } from './posts.resolver';
 
 @Module({
-  providers: [PostsResolver, PostsService],
+  providers: [DraftsResolver, DraftsService],
 })
 export class PostsModule {}

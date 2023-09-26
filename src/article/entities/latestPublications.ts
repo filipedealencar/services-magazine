@@ -23,21 +23,3 @@ export class LatestPublications extends Model {
   @Column({ allowNull: false, type: DataType.TEXT })
   url: string;
 }
-
-@Table({
-  tableName: 'draft_posts',
-})
-export class DraftPosts extends Model {
-  @PrimaryKey
-  @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
-  id: string;
-
-  @Column({ allowNull: false, type: DataType.JSON })
-  post: JSON;
-
-  @Column({ allowNull: false, type: DataType.TEXT })
-  title: string;
-
-  @Column({ allowNull: false, type: DataType.TEXT })
-  url: string;
-}

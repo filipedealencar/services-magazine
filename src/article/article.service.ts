@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
-import * as fs from 'fs';
-import { DraftPosts, LatestPublications } from './article.entity';
 import * as dotenv from 'dotenv';
+import { LatestPublications } from '@/article/entities/latestPublications';
+import { DraftPosts } from '@/article/entities/draftPosts';
 
 dotenv.config();
 @Injectable()
@@ -12,18 +12,22 @@ export class ArticleService {
     const options = [
       {
         selector: `#${process.env.FIRST_SELECTOR}`,
+        title: `.${process.env.FIRST_ARTICLE_TITLE_SELECTOR}`,
         origin: process.env.FIRST_ORIGIN,
       },
       {
         selector: `.${process.env.SECOND_SELECTOR}`,
+        title: `.${process.env.SECOND_ARTICLE_TITLE_SELECTOR}`,
         origin: process.env.SECOND_ORIGIN,
       },
       {
         selector: process.env.THIRD_SELECTOR,
+        title: process.env.THIRD_ARTICLE_TITLE_SELECTOR,
         origin: process.env.THIRD_ORIGIN,
       },
       {
         selector: process.env.FOURTH_SELECTOR,
+        title: process.env.FOURTH_ARTICLE_TITLE_SELECTOR,
         origin: process.env.FOURTH_ORIGIN,
       },
     ];
@@ -38,13 +42,14 @@ export class ArticleService {
           return (articleContent = this.extractContent(
             articleHtml,
             select.selector,
+            select.title,
           ));
         }
       });
 
       console.log(articleContent);
 
-      DraftPosts.create({ post: articleContent, title: 'teste', url })
+      DraftPosts.create({ post: articleContent, url })
         .then(() => {
           console.log(
             'Novos dados foram inseridos com sucesso, na tabela de drafts',
@@ -65,10 +70,15 @@ export class ArticleService {
     }
   }
 
-  private extractContent(html: string, selector: string): Object {
+  private extractContent(
+    html: string,
+    selector: string,
+    title: string,
+  ): Object {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
+    const contentTitle = { t: document.querySelector(title).textContent };
     const elementP = document.querySelector(selector).querySelectorAll('p');
     const contentP = {};
     elementP.forEach((element, indice) => {
@@ -79,7 +89,8 @@ export class ArticleService {
       }
       return (contentP[`p${indice + 1}`] = element.textContent);
     });
-    return contentP;
+    const uniqueObj = { ...contentTitle, ...contentP };
+    return uniqueObj;
   }
 
   async checkForNewPublications(site: {
@@ -157,7 +168,7 @@ export class ArticleService {
     );
     const valuesArray = await Promise.all(promises);
     const newPublications = Object.assign({}, ...valuesArray);
-    const latestePublication = await LatestPublications.findAll({
+    const latestPublication = await LatestPublications.findAll({
       raw: true,
     });
 
@@ -180,7 +191,7 @@ export class ArticleService {
       return formattedData;
     };
 
-    const formattedData = formatPublications(latestePublication);
+    const formattedData = formatPublications(latestPublication);
 
     //   return formattedData;
 
@@ -246,12 +257,6 @@ export class ArticleService {
           .catch((error) => {
             console.error('Erro ao excluir dados da tabela:', error);
           });
-
-        // fs.writeFileSync(
-        //   dataFile,
-        //   JSON.stringify(newPublications, null, 2),
-        //   'utf8',
-        // );
       } else {
         console.log('Nenhuma nova publicação encontrada.');
       }

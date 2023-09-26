@@ -1,13 +1,17 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PostsModule } from './posts/posts.module';
 import { ArticleModule } from './article/article.module';
 import { ArticleController } from './article/article.controller';
 import { ArticleService } from './article/article.service';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { DraftPosts, LatestPublications } from './article/article.entity';
 import * as dotenv from 'dotenv';
+import { LatestPublications } from '@/article/entities/latestPublications';
+import { DraftPosts } from '@/article/entities/draftPosts';
+import { PostsModule } from './posts/posts.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { DraftsService } from './posts/posts.service';
 
 dotenv.config();
 
@@ -23,10 +27,16 @@ dotenv.config();
       autoLoadModels: true,
       models: [LatestPublications, DraftPosts],
     }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      playground: true,
+      path: 'post',
+    }),
     PostsModule,
     ArticleModule,
   ],
   controllers: [AppController, ArticleController],
-  providers: [AppService, ArticleService],
+  providers: [AppService, ArticleService, DraftsService],
 })
 export class AppModule {}

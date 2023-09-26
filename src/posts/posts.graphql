@@ -1,24 +1,32 @@
-type Post {
-  # Example field (placeholder)
-  exampleField: Int
+# schema.graphql
+
+type Draft {
+  id: String
+  post: JSON
+  url: String
 }
 
-input CreatePostInput {
-  # Example field (placeholder)
-  exampleField: Int
+type DraftType {
+  id: String
+  post: JSON
+  url: String
 }
 
-input UpdatePostInput {
-  id: Int!
-}
-
-type Query {
-  posts: [Post]!
-  post(id: Int!): Post
+input UpdateDraftFieldInput {
+  id: String
+  updatedContent: JSON
 }
 
 type Mutation {
-  createPost(createPostInput: CreatePostInput!): Post!
-  updatePost(updatePostInput: UpdatePostInput!): Post!
-  removePost(id: Int!): Post
+  updateDraft(input: DraftUpdateType): DraftPosts
+}
+
+type DraftUpdateType {
+  id: String
+  post: JSON
+  url: String
+}
+
+type Query {
+  drafts: [DraftType]
 }
